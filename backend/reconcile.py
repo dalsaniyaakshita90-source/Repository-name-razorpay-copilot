@@ -377,25 +377,25 @@ for payment_id, ledger_row in ledger_by_id.items():
         2
     )
 
-    razorpay = razorpay_by_id[payment_id]
+    razorpay_row = razorpay_by_id[payment_id]
 
     gross = round(
-        float(razorpay["gross_amount"]),
+        float(razorpay_row["gross_amount"]),
         2
     )
 
     fee = round(
-        float(razorpay["fee"]),
+        float(razorpay_row["fee"]),
         2
     )
 
     tax = round(
-        float(razorpay["tax"]),
+        float(razorpay_row["tax"]),
         2
     )
 
     net = round(
-        float(razorpay["net_amount"]),
+        float(razorpay_row["net_amount"]),
         2
     )
 
