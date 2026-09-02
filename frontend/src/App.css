@@ -574,3 +574,108 @@ body {
     flex-direction: column;
   }
 }
+
+/* COPILOT STATUS */
+
+.copilot-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  padding: 9px 13px;
+  margin: 4px 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid;
+}
+
+.copilot-status strong {
+  font-size: 11px;
+  letter-spacing: 0.7px;
+}
+
+.copilot-status span:last-child {
+  font-size: 11px;
+  color: #6d7076;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.copilot-status.verified {
+  background: #f0faf3;
+  border-color: #cfe8d5;
+  color: #287a43;
+}
+
+.copilot-status.verified .status-dot,
+.copilot-inline-status.verified .status-dot {
+  background: #2e9b55;
+}
+
+.copilot-status.partial {
+  background: #fff9eb;
+  border-color: #f0dfb5;
+  color: #9a6700;
+}
+
+.copilot-status.partial .status-dot,
+.copilot-inline-status.partial .status-dot {
+  background: #d99a16;
+}
+
+.copilot-status.unresolved {
+  background: #fff2f2;
+  border-color: #efcccc;
+  color: #c63636;
+}
+
+.copilot-status.unresolved .status-dot,
+.copilot-inline-status.unresolved .status-dot {
+  background: #d83a3a;
+}
+
+.copilot-inline-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 12px 0 4px;
+  line-height: 1.6;
+}
+
+.copilot-inline-status .status-dot {
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  border-radius: 50%;
+  margin-top: 7px;
+}
+
+.copilot-inline-status.verified {
+  color: #287a43;
+}
+
+.copilot-inline-status.partial {
+  color: #9a6700;
+}
+
+.copilot-inline-status.unresolved {
+  color: #c63636;
+}
+
+.answer-line {
+  color: #292b30;
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.answer-spacer {
+  height: 8px;
+}
+

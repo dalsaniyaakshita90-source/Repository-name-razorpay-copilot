@@ -452,17 +452,109 @@ function App() {
   }
 
   function renderCopilot() {
+    function renderAnswerLine(line, index) {
+      const trimmed = line.trim();
+
+      if (trimmed === "VERIFIED") {
+        return (
+          <div className="copilot-status verified" key={index}>
+            <span className="status-dot"></span>
+            <strong>VERIFIED</strong>
+            <span>Evidence supported</span>
+          </div>
+        );
+      }
+
+      if (trimmed === "PARTIAL") {
+        return (
+          <div className="copilot-status partial" key={index}>
+            <span className="status-dot"></span>
+            <strong>PARTIAL</strong>
+            <span>Some evidence available</span>
+          </div>
+        );
+      }
+
+      if (trimmed === "UNRESOLVED") {
+        return (
+          <div className="copilot-status unresolved" key={index}>
+            <span className="status-dot"></span>
+            <strong>UNRESOLVED</strong>
+            <span>Insufficient evidence</span>
+          </div>
+        );
+      }
+
+      if (trimmed.startsWith("VERIFIED —")) {
+        return (
+          <div className="copilot-inline-status verified" key={index}>
+            <span className="status-dot"></span>
+            <strong>{trimmed}</strong>
+          </div>
+        );
+      }
+
+      if (trimmed.startsWith("PARTIAL —")) {
+        return (
+          <div className="copilot-inline-status partial" key={index}>
+            <span className="status-dot"></span>
+            <strong>{trimmed}</strong>
+          </div>
+        );
+      }
+
+      if (trimmed.startsWith("UNRESOLVED —")) {
+        return (
+          <div className="copilot-inline-status unresolved" key={index}>
+            <span className="status-dot"></span>
+            <strong>{trimmed}</strong>
+          </div>
+        );
+      }
+
+      if (!trimmed) {
+        return <div className="answer-spacer" key={index}></div>;
+      }
+
+      return (
+        <div className="answer-line" key={index}>
+          {line}
+        </div>
+      );
+    }
+
     return (
       <section className="copilot-card">
         <div className="card-kicker">COPILOT INTELLIGENCE</div>
 
         <h3>Ask about your reconciliation</h3>
 
-        <p>
-          Ask questions about exceptions, match rate, severity, or
-          reconciliation status. The Copilot only answers from the
-          available evidence.
+        <p className="copilot-description">
+          Investigate payments and settlements using evidence from the
+          internal ledger, bank statement, and Razorpay settlement data.
+          The Copilot does not invent conclusions when the evidence is
+          insufficient.
         </p>
+
+        <div className="copilot-principles">
+          <div>
+            <strong>01</strong>
+            <span>Trace</span>
+            <small>Follow the payment across available records.</small>
+          </div>
+
+          <div>
+            <strong>02</strong>
+            <span>Explain</span>
+            <small>Show the evidence behind the finding.</small>
+          </div>
+
+          <div>
+            <strong>03</strong>
+            <span>Abstain</span>
+            <small>Say UNRESOLVED when evidence is missing.</small>
+          </div>
+        </div>
 
         <div className="question-box">
           <input
@@ -473,7 +565,7 @@ function App() {
                 answerQuestion();
               }
             }}
-            placeholder="Why was I paid less this week?"
+            placeholder="Why was PAY_0041 paid less?"
           />
 
           <button onClick={answerQuestion}>Ask Copilot</button>
@@ -482,15 +574,7 @@ function App() {
         <div className="suggestions">
           <button
             onClick={() =>
-              setQuestion("Why was I paid less this week?")
-            }
-          >
-            Why was I paid less?
-          </button>
-
-          <button
-            onClick={() =>
-              setQuestion("What happened with PAY_0041?")
+              setQuestion("Why was PAY_0041 paid less?")
             }
           >
             Investigate PAY_0041
@@ -498,7 +582,15 @@ function App() {
 
           <button
             onClick={() =>
-              setQuestion("What happened with PAY_9999?")
+              setQuestion("Why is PAY_0047 flagged?")
+            }
+          >
+            Investigate PAY_0047
+          </button>
+
+          <button
+            onClick={() =>
+              setQuestion("Why was PAY_9999 paid less?")
             }
           >
             Test unknown payment
@@ -515,8 +607,27 @@ function App() {
 
         {answer && (
           <div className="copilot-answer">
-            <div className="card-kicker">COPILOT RESPONSE</div>
-            <p style={{ whiteSpace: "pre-line" }}>{answer}</p>
+            <div className="answer-header">
+              <div>
+                <div className="card-kicker">EVIDENCE-GROUNDED RESPONSE</div>
+                <h4>Copilot investigation</h4>
+              </div>
+
+              <span className="evidence-badge">SOURCE-BASED</span>
+            </div>
+
+            <div className="answer-content">
+              {answer.split("\n").map((line, index) =>
+                renderAnswerLine(line, index)
+              )}
+            </div>
+
+            <div className="answer-footer">
+              <span>Evidence policy</span>
+              <strong>
+                No supporting record → UNRESOLVED
+              </strong>
+            </div>
           </div>
         )}
       </section>
@@ -967,4 +1078,5 @@ function ExceptionDetail({ exception, onClose }) {
 }
 
 export default App;
+
 
