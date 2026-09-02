@@ -378,6 +378,14 @@ function App() {
             <h3>Razorpay</h3>
             <p>{TOTAL_RECORDS} settlements</p>
           </div>
+
+          <div className="flow-arrow">→</div>
+
+          <div className="source-card result-source">
+            <span>04</span>
+            <h3>Exceptions</h3>
+            <p>{totalExceptions} require attention</p>
+          </div>
         </section>
 
         <section className="card">
@@ -959,9 +967,4 @@ function ExceptionDetail({ exception, onClose }) {
 }
 
 export default App;
-
-
-
-
-
 
