@@ -72,17 +72,19 @@ This prevents the system from inventing explanations for financial discrepancies
 
 ## 📊 Evaluation
 
-The current synthetic evaluation contains **5 known financial incidents**.
+The current synthetic evaluation contains **5 known financial incidents affecting 5 payments**.
 
 | Metric | Result |
 |---|---:|
 | Ground-truth incidents | 5 |
-| Detected exceptions | 5 |
-| True positives | 5 |
+| Detected exception rows | 6 |
+| True-positive payments | 5 |
 | Missed incidents | 0 |
-| False positives | 0 |
+| False-positive payments | 0 |
 | Detection rate | **100%** |
 | Classification rate | **100%** |
+
+> **Note:** 5 injected incidents affected 5 payments. One affected payment (`PAY_0009`) produced two exception signals, so the engine surfaced **6 exception rows** while detecting all **5 injected incidents**.
 
 ### Classification Coverage
 
@@ -94,11 +96,11 @@ The current synthetic evaluation contains **5 known financial incidents**.
 | MISSING_BANK | 1 | 1 |
 | REFUND_DIFFERENCE | 1 | 1 |
 
----
-
 ## 🏗️ Architecture
 
 ```text
+                 │ / Copilot           │
+                 └─────────────────────┘
                  ┌─────────────────────┐
                  │   Synthetic Data    │
                  └──────────┬──────────┘
@@ -129,6 +131,7 @@ The current synthetic evaluation contains **5 known financial incidents**.
                  └─────────────────────┘
 
 💬 Example Investigations
+
 Verified Exception
 
 Question:
