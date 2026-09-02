@@ -256,3 +256,99 @@ The current synthetic evaluation contains \*\*5 known financial incidents\*\*.
 
 &#x20;                └─────────────────────┘
 
+💬 Example Investigations
+Verified exception
+
+Question:
+
+What happened with PAY_0009?
+
+The Copilot traces the payment to its underlying records and identifies the relevant exceptions, including the duplicate bank record and amount discrepancy.
+
+Unresolved case
+
+Question:
+
+What happened with PAY_9999?
+
+The Copilot does not invent an explanation because no supporting record exists.
+
+Settlement investigation
+
+Question:
+
+Why was I paid less this week?
+
+The Copilot identifies relevant settlement exceptions and explains which records provide evidence for the discrepancy.
+
+🛠️ Tech Stack
+Python
+React
+Vite
+JavaScript
+CSV-based synthetic financial data
+Git / GitHub
+
+📁 Project Structure
+razorpay-copilot/
+│
+├── backend/
+│   ├── generate_data.py
+│   └── reconcile.py
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── ground_truth/
+│
+├── evaluation/
+│   └── evaluate_reconciliation.py
+│
+├── frontend/
+│   ├── public/
+│   └── src/
+│
+├── .gitignore
+└── README.md
+
+
+▶️ Running the Project
+
+Backend
+
+cd backend
+python generate_data.py
+python reconcile.py
+
+Evaluation
+
+cd evaluation
+python evaluate_reconciliation.py
+
+Frontend
+
+cd frontend
+npm run dev
+
+Open the local Vite URL shown in the terminal.
+
+🎯 Buildathon Track
+
+Built for:
+
+Razorpay AI Buildathon — Track 04: AI Finance Controller
+
+The prototype focuses on closing a finance-operations loop through:
+
+Multi-source reconciliation
+Measured exception detection
+Exception classification
+Settlement investigation
+Evidence-grounded answers
+Honest abstention when evidence is insufficient
+
+🔑 Product Principle
+
+It doesn't just answer. It proves.
+And when it cannot prove — it says so.
+
