@@ -55,7 +55,7 @@ def add_exception(payment_id, issue, severity, reason, evidence):
 
 
 # ============================================================
-# 1. MISSING BANK RECORD
+# 1. MISSING BANK
 # ============================================================
 
 for payment_id, ledger_row in ledger_by_id.items():
@@ -83,16 +83,17 @@ for payment_id, ledger_row in ledger_by_id.items():
     if payment_id not in bank_by_id:
         continue
 
+    # Duplicate payments are handled separately.
+    if len(bank_by_id[payment_id]) > 1:
+        continue
+
     ledger_amount = round(
         float(ledger_row["amount"]),
         2
     )
 
     bank_amount = round(
-        sum(
-            float(row["credit_amount"])
-            for row in bank_by_id[payment_id]
-        ),
+        float(bank_by_id[payment_id][0]["credit_amount"]),
         2
     )
 
@@ -103,21 +104,41 @@ for payment_id, ledger_row in ledger_by_id.items():
 
     if abs(difference) > 0.01:
 
-        add_exception(
-            payment_id,
-            "AMOUNT_MISMATCH",
-            "HIGH",
-            "Ledger amount does not match bank credit.",
-            (
-                f"Ledger: Rs {ledger_amount:.2f}; "
-                f"Bank: Rs {bank_amount:.2f}; "
-                f"Difference: Rs {difference:.2f}"
+        # Check whether Razorpay also disagrees.
+        razorpay_conflict = False
+
+        if payment_id in razorpay_by_id:
+
+            razorpay_gross = round(
+                float(
+                    razorpay_by_id[payment_id]["gross_amount"]
+                ),
+                2
             )
-        )
+
+            razorpay_conflict = (
+                abs(ledger_amount - razorpay_gross) > 0.01
+            )
+
+        # If Razorpay also conflicts with the ledger,
+        # leave this payment for UNRESOLVED_DIFFERENCE.
+        if not razorpay_conflict:
+
+            add_exception(
+                payment_id,
+                "AMOUNT_MISMATCH",
+                "HIGH",
+                "Ledger amount does not match bank credit.",
+                (
+                    f"Ledger: Rs {ledger_amount:.2f}; "
+                    f"Bank: Rs {bank_amount:.2f}; "
+                    f"Difference: Rs {difference:.2f}"
+                )
+            )
 
 
 # ============================================================
-# 3. SETTLEMENT DATE VARIANCE
+# 3. DATE VARIANCE
 # ============================================================
 
 for payment_id, ledger_row in ledger_by_id.items():
@@ -129,6 +150,7 @@ for payment_id, ledger_row in ledger_by_id.items():
     settlement_date = razorpay_by_id[payment_id]["settlement_date"]
 
     try:
+
         d1 = datetime.strptime(
             ledger_date,
             "%Y-%m-%d"
@@ -143,9 +165,6 @@ for payment_id, ledger_row in ledger_by_id.items():
 
     except ValueError:
         continue
-
-    # Normal settlement can take a few days.
-    # Flag unusually large variance.
 
     if days > 3 or days < 0:
 
@@ -163,7 +182,7 @@ for payment_id, ledger_row in ledger_by_id.items():
 
 
 # ============================================================
-# 4. DUPLICATE BANK RECORD
+# 4. DUPLICATE
 # ============================================================
 
 for payment_id, rows in bank_by_id.items():
@@ -191,7 +210,7 @@ for payment_id, rows in bank_by_id.items():
 
 
 # ============================================================
-# 5. REFUND / ADJUSTMENT
+# 5. REFUND DIFFERENCE
 # ============================================================
 
 for payment_id, rows in adjustments_by_id.items():
@@ -217,14 +236,12 @@ for payment_id, rows in adjustments_by_id.items():
                 "REFUND_DIFFERENCE",
                 "MEDIUM",
                 "Refund adjustment requires reconciliation.",
-                (
-                    f"Refund amount: Rs {amount:.2f}"
-                )
+                f"Refund amount: Rs {amount:.2f}"
             )
 
 
 # ============================================================
-# 6. FEE / TAX CHECK
+# 6. FEE / TAX MISMATCH
 # ============================================================
 
 for payment_id, razorpay_row in razorpay_by_id.items():
@@ -280,6 +297,162 @@ for payment_id, razorpay_row in razorpay_by_id.items():
 
 
 # ============================================================
+# 7. SOURCE CONFLICT
+# ============================================================
+
+for payment_id, ledger_row in ledger_by_id.items():
+
+    if payment_id not in bank_by_id:
+        continue
+
+    if payment_id not in razorpay_by_id:
+        continue
+
+    # Duplicate records are handled separately.
+    if len(bank_by_id[payment_id]) > 1:
+        continue
+
+    ledger_amount = round(
+        float(ledger_row["amount"]),
+        2
+    )
+
+    bank_amount = round(
+        float(bank_by_id[payment_id][0]["credit_amount"]),
+        2
+    )
+
+    razorpay_gross = round(
+        float(
+            razorpay_by_id[payment_id]["gross_amount"]
+        ),
+        2
+    )
+
+    # Ledger and bank agree,
+    # but Razorpay disagrees.
+
+    if (
+        abs(ledger_amount - bank_amount) <= 0.01
+        and
+        abs(ledger_amount - razorpay_gross) > 0.01
+    ):
+
+        add_exception(
+            payment_id,
+            "SOURCE_CONFLICT",
+            "HIGH",
+            "Bank and ledger agree, but Razorpay gross amount conflicts with both sources.",
+            (
+                f"Ledger: Rs {ledger_amount:.2f}; "
+                f"Bank: Rs {bank_amount:.2f}; "
+                f"Razorpay gross: Rs {razorpay_gross:.2f}"
+            )
+        )
+
+
+# ============================================================
+# 8. UNRESOLVED DIFFERENCE
+# ============================================================
+
+for payment_id, ledger_row in ledger_by_id.items():
+
+    if payment_id not in bank_by_id:
+        continue
+
+    if payment_id not in razorpay_by_id:
+        continue
+
+    # Duplicate records are handled separately.
+    if len(bank_by_id[payment_id]) > 1:
+        continue
+
+    ledger_amount = round(
+        float(ledger_row["amount"]),
+        2
+    )
+
+    bank_amount = round(
+        float(bank_by_id[payment_id][0]["credit_amount"]),
+        2
+    )
+
+    razorpay = razorpay_by_id[payment_id]
+
+    gross = round(
+        float(razorpay["gross_amount"]),
+        2
+    )
+
+    fee = round(
+        float(razorpay["fee"]),
+        2
+    )
+
+    tax = round(
+        float(razorpay["tax"]),
+        2
+    )
+
+    net = round(
+        float(razorpay["net_amount"]),
+        2
+    )
+
+    expected_net = round(
+        gross - fee - tax,
+        2
+    )
+
+    bank_difference = round(
+        ledger_amount - bank_amount,
+        2
+    )
+
+    razorpay_difference = round(
+        net - expected_net,
+        2
+    )
+
+    # UNRESOLVED means:
+    # 1. Ledger and bank disagree
+    # 2. Razorpay also conflicts with the ledger
+    # 3. Razorpay's own net calculation is internally valid
+    #
+    # This distinguishes it from:
+    # AMOUNT_MISMATCH
+    # FEE_TAX_MISMATCH
+    # SOURCE_CONFLICT
+
+    razorpay_source_conflict = (
+        abs(ledger_amount - gross) > 0.01
+    )
+
+    if (
+        abs(bank_difference) > 0.01
+        and
+        razorpay_source_conflict
+        and
+        abs(razorpay_difference) <= 0.01
+    ):
+
+        add_exception(
+            payment_id,
+            "UNRESOLVED_DIFFERENCE",
+            "HIGH",
+            "Ledger, bank and Razorpay sources disagree, and the available records do not establish a single reconciled explanation.",
+            (
+                f"Ledger: Rs {ledger_amount:.2f}; "
+                f"Bank: Rs {bank_amount:.2f}; "
+                f"Bank difference: Rs {bank_difference:.2f}; "
+                f"Razorpay gross: Rs {gross:.2f}; "
+                f"Razorpay reported net: Rs {net:.2f}; "
+                f"Expected net: Rs {expected_net:.2f}"
+            )
+        )
+
+
+# ============================================================
 # SAVE RESULTS
 # ============================================================
 
@@ -317,6 +490,7 @@ with open(
 counts = defaultdict(int)
 
 for exception in exceptions:
+
     counts[
         exception["exception_type"]
     ] += 1
@@ -352,6 +526,7 @@ print("EXCEPTION BREAKDOWN")
 print("-" * 45)
 
 for issue, count in sorted(counts.items()):
+
     print(
         f"{issue:<25} {count}"
     )

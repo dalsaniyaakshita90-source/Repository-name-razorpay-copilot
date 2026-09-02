@@ -1,7 +1,17 @@
 payment_id,exception_type,severity,reason,evidence
-PAY_0008,MISSING_BANK,HIGH,Successful ledger transaction has no matching bank record.,Ledger amount: Rs 2800.00
-PAY_0006,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 5000.00; Bank: Rs 4700.00; Difference: Rs 300.00
-PAY_0009,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 3600.00; Bank: Rs 7200.00; Difference: Rs -3600.00
-PAY_0007,DATE_VARIANCE,MEDIUM,Settlement date differs significantly from transaction date.,Transaction date: 2026-08-07; Settlement date: 2026-08-11; Variance: 4 day(s)
-PAY_0009,DUPLICATE,HIGH,Multiple bank records exist for the same payment.,Bank records: 2; Combined credit: Rs 7200.00
-PAY_0010,REFUND_DIFFERENCE,MEDIUM,Refund adjustment requires reconciliation.,Refund amount: Rs 200.00
+PAY_0043,MISSING_BANK,HIGH,Successful ledger transaction has no matching bank record.,Ledger amount: Rs 2800.00
+PAY_0051,MISSING_BANK,HIGH,Successful ledger transaction has no matching bank record.,Ledger amount: Rs 2700.00
+PAY_0041,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 5000.00; Bank: Rs 4700.00; Difference: Rs 300.00
+PAY_0049,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 4100.00; Bank: Rs 3800.00; Difference: Rs 300.00
+PAY_0042,DATE_VARIANCE,MEDIUM,Settlement date differs significantly from transaction date.,Transaction date: 2026-08-02; Settlement date: 2026-08-07; Variance: 5 day(s)
+PAY_0050,DATE_VARIANCE,MEDIUM,Settlement date differs significantly from transaction date.,Transaction date: 2026-08-10; Settlement date: 2026-08-15; Variance: 5 day(s)
+PAY_0044,DUPLICATE,HIGH,Multiple bank records exist for the same payment.,Bank records: 2; Combined credit: Rs 7200.00
+PAY_0052,DUPLICATE,HIGH,Multiple bank records exist for the same payment.,Bank records: 2; Combined credit: Rs 6600.00
+PAY_0045,REFUND_DIFFERENCE,MEDIUM,Refund adjustment requires reconciliation.,Refund amount: Rs 200.00
+PAY_0053,REFUND_DIFFERENCE,MEDIUM,Refund adjustment requires reconciliation.,Refund amount: Rs 200.00
+PAY_0046,FEE_TAX_MISMATCH,MEDIUM,"Razorpay net amount does not reconcile with gross amount, fee and tax.",Gross: Rs 5200.00; Fee: Rs 104.00; Tax: Rs 18.72; Reported net: Rs 5044.00; Expected net: Rs 5077.28
+PAY_0054,FEE_TAX_MISMATCH,MEDIUM,"Razorpay net amount does not reconcile with gross amount, fee and tax.",Gross: Rs 5600.00; Fee: Rs 112.00; Tax: Rs 20.16; Reported net: Rs 5432.00; Expected net: Rs 5467.84
+PAY_0047,SOURCE_CONFLICT,HIGH,"Bank and ledger agree, but Razorpay gross amount conflicts with both sources.",Ledger: Rs 6100.00; Bank: Rs 6100.00; Razorpay gross: Rs 6350.00
+PAY_0055,SOURCE_CONFLICT,HIGH,"Bank and ledger agree, but Razorpay gross amount conflicts with both sources.",Ledger: Rs 6200.00; Bank: Rs 6200.00; Razorpay gross: Rs 6450.00
+PAY_0048,UNRESOLVED_DIFFERENCE,HIGH,"Ledger, bank and Razorpay sources disagree, and the available records do not establish a single reconciled explanation.",Ledger: Rs 7300.00; Bank: Rs 7100.00; Bank difference: Rs 200.00; Razorpay gross: Rs 7700.00; Razorpay reported net: Rs 7527.72; Expected net: Rs 7527.72
+PAY_0056,UNRESOLVED_DIFFERENCE,HIGH,"Ledger, bank and Razorpay sources disagree, and the available records do not establish a single reconciled explanation.",Ledger: Rs 7100.00; Bank: Rs 6900.00; Bank difference: Rs 200.00; Razorpay gross: Rs 7500.00; Razorpay reported net: Rs 7332.44; Expected net: Rs 7332.44
