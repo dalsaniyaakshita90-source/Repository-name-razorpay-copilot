@@ -69,32 +69,46 @@ If the available records cannot support a conclusion:
 This prevents the system from inventing explanations for financial discrepancies.
 
 ---
-
 ## 📊 Evaluation
 
-The current synthetic evaluation contains **5 known financial incidents affecting 5 payments**.
+The reconciliation engine is evaluated against a reproducible synthetic batch of **56 transactions** containing **16 known financial incidents across 8 exception types**.
+
+### Evaluation Results
 
 | Metric | Result |
 |---|---:|
-| Ground-truth incidents | 5 |
-| Detected exception rows | 6 |
-| True-positive payments | 5 |
-| Missed incidents | 0 |
-| False-positive payments | 0 |
+| Records evaluated | **56** |
+| Ground-truth incidents | **16** |
+| Detected exception rows | **16** |
+| True-positive payments | **16** |
+| Missed incidents | **0** |
+| False-positive payments | **0** |
 | Detection rate | **100%** |
 | Classification rate | **100%** |
 
-> **Note:** 5 injected incidents affected 5 payments. One affected payment (`PAY_0009`) produced two exception signals, so the engine surfaced **6 exception rows** while detecting all **5 injected incidents**.
-
 ### Classification Coverage
 
-| Exception | Expected | Detected |
+| Exception Type | Expected | Detected |
 |---|---:|---:|
-| AMOUNT_MISMATCH | 1 | 1 |
-| DATE_VARIANCE | 1 | 1 |
-| DUPLICATE | 1 | 1 |
-| MISSING_BANK | 1 | 1 |
-| REFUND_DIFFERENCE | 1 | 1 |
+| AMOUNT_MISMATCH | 2 | 2 |
+| DATE_VARIANCE | 2 | 2 |
+| DUPLICATE | 2 | 2 |
+| FEE_TAX_MISMATCH | 2 | 2 |
+| MISSING_BANK | 2 | 2 |
+| REFUND_DIFFERENCE | 2 | 2 |
+| SOURCE_CONFLICT | 2 | 2 |
+| UNRESOLVED_DIFFERENCE | 2 | 2 |
+
+### Reproducibility
+
+The evaluation uses a separate ground-truth file containing the injected incidents.
+
+To regenerate the dataset and run the reconciliation:
+
+```bash
+python backend/generate_data.py
+python backend/reconcile.py
+python evaluation/evaluate_reconciliation.py
 
 ## 🏗️ Architecture
 
