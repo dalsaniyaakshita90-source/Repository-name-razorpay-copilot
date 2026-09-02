@@ -1,6 +1,5 @@
-﻿import csv
+import csv
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parent.parent
 EXCEPTIONS = ROOT / "frontend" / "public" / "exceptions.csv"
@@ -19,7 +18,7 @@ def find_payment(rows, payment_id):
     ]
 
 
-def classify_payment(rows, payment_id):
+def verify_evidence(rows, payment_id):
     matches = find_payment(rows, payment_id)
 
     if not matches:
@@ -29,16 +28,20 @@ def classify_payment(rows, payment_id):
             "reason": "No matching reconciliation evidence was found."
         }
 
-    evidence_complete = all(
-        row.get("payment_id")
-        and row.get("exception_type")
-        and row.get("severity")
-        and row.get("reason")
-        and row.get("evidence")
+    required_fields = [
+        "payment_id",
+        "exception_type",
+        "severity",
+        "reason",
+        "evidence",
+    ]
+
+    complete = all(
+        all(row.get(field, "").strip() for field in required_fields)
         for row in matches
     )
 
-    if not evidence_complete:
+    if not complete:
         return {
             "status": "UNRESOLVED",
             "evidence": False,
@@ -48,12 +51,11 @@ def classify_payment(rows, payment_id):
     return {
         "status": "VERIFIED",
         "evidence": True,
-        "reason": "Matching exception evidence is present."
+        "reason": "The reconciliation evidence supports the exception."
     }
 
 
 def main():
-
     if not EXCEPTIONS.exists():
         print(f"ERROR: Exceptions file not found: {EXCEPTIONS}")
         return
@@ -61,6 +63,7 @@ def main():
     rows = load_csv(EXCEPTIONS)
 
     tests = [
+        ("PAY_0041", "VERIFIED"),
         ("PAY_0047", "VERIFIED"),
         ("PAY_0048", "VERIFIED"),
         ("PAY_9999", "UNRESOLVED"),
@@ -69,18 +72,15 @@ def main():
     passed = 0
 
     print()
-    print("=" * 60)
+    print("=" * 64)
     print("RAZORPAY COPILOT - AI JUDGMENT EVALUATION")
-    print("=" * 60)
+    print("=" * 64)
     print()
-
     print(f"Evidence records loaded : {len(rows)}")
     print()
 
     for payment_id, expected in tests:
-
-        result = classify_payment(rows, payment_id)
-
+        result = verify_evidence(rows, payment_id)
         actual = result["status"]
 
         if actual == expected:
@@ -95,32 +95,24 @@ def main():
             f"actual={actual:<12} "
             f"{outcome}"
         )
-
-        print(
-            f"  Evidence present: {result['evidence']}"
-        )
-
-        print(
-            f"  Reason: {result['reason']}"
-        )
-
+        print(f"  Evidence supported: {result['evidence']}")
+        print(f"  Judgment: {result['reason']}")
         print()
 
-    print("-" * 60)
+    print("-" * 64)
     print(f"Tests passed: {passed}/{len(tests)}")
-    print(
-        f"Judgment accuracy: "
-        f"{passed / len(tests) * 100:.2f}%"
-    )
+    print(f"Judgment accuracy: {passed / len(tests) * 100:.2f}%")
+    print()
 
+    print("JUDGMENT POLICY")
+    print("-" * 64)
+    print("VERIFIED = evidence supports the claim.")
+    print("UNRESOLVED = evidence is absent or insufficient.")
+    print("A business exception may remain OPEN even when its evidence is VERIFIED.")
+    print("The Copilot must never invent missing evidence.")
     print()
-    print("EVIDENCE POLICY")
-    print("-" * 60)
-    print("VERIFIED requires matching supporting evidence.")
-    print("Unknown payments must return UNRESOLVED.")
-    print("Missing evidence must never produce VERIFIED.")
-    print()
-    print("=" * 60)
+
+    print("=" * 64)
 
 
 if __name__ == "__main__":

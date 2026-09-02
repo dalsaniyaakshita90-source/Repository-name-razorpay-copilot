@@ -135,32 +135,40 @@ function App() {
       if (matches.length === 0) {
         setAnswer(
           ` UNRESOLVED\n\n` +
-          `I can't determine what happened with ${paymentId} from the available reconciliation records.\n\n` +
+          `I can't determine why ${paymentId} was paid less from the available reconciliation records.\n\n` +
           `No matching exception evidence was found for this payment. ` +
           `I won't infer a result without supporting records.`
         );
         return;
       }
 
-      const details = matches
+            const details = matches
         .map((item) => {
           const evidence = item.evidence
             ? `Evidence: ${item.evidence}`
             : "Evidence: No additional evidence available.";
 
+          const businessStatus =
+            item.exception_type === "UNRESOLVED_DIFFERENCE"
+              ? "UNRESOLVED"
+              : "OPEN";
+
           return (
             `${item.exception_type} — ${item.severity}\n` +
             `${item.reason}\n` +
-            `${evidence}`
+            `${evidence}\n\n` +
+            `Business status: ${businessStatus}`
           );
         })
         .join("\n\n");
 
       setAnswer(
-        ` VERIFIED\n\n` +
+        `VERIFIED\n\n` +
+        `Evidence supported\n\n` +
         `I traced ${paymentId} across the reconciliation exceptions.\n\n` +
         `${details}\n\n` +
-        `These findings are directly supported by the available reconciliation records.`
+        `The evidence above is directly supported by the available reconciliation records.\n` +
+        `Evidence confidence does not mean the underlying business exception is resolved.`
       );
 
       return;
