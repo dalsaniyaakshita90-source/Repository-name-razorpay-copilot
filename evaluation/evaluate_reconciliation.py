@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 
 ROOT = Path(__file__).resolve().parent.parent
 GROUND_TRUTH = ROOT / "data" / "ground_truth" / "injected_incidents.csv"
@@ -10,6 +10,19 @@ EXCEPTIONS = ROOT / "frontend" / "public" / "exceptions.csv"
 def load_csv(path):
     with open(path, newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
+
+
+def build_exception_map(rows):
+    result = defaultdict(set)
+
+    for row in rows:
+        payment_id = row.get("payment_id")
+        exception_type = row.get("exception_type")
+
+        if payment_id and exception_type:
+            result[payment_id].add(exception_type)
+
+    return dict(result)
 
 
 def main():
@@ -24,17 +37,8 @@ def main():
     truth = load_csv(GROUND_TRUTH)
     detected = load_csv(EXCEPTIONS)
 
-    truth_map = {
-        row["payment_id"]: row["exception_type"]
-        for row in truth
-        if row.get("payment_id")
-    }
-
-    detected_map = {
-        row["payment_id"]: row["exception_type"]
-        for row in detected
-        if row.get("payment_id")
-    }
+    truth_map = build_exception_map(truth)
+    detected_map = build_exception_map(detected)
 
     truth_ids = set(truth_map)
     detected_ids = set(detected_map)
@@ -46,13 +50,13 @@ def main():
     correctly_classified = {
         payment_id
         for payment_id in true_positives
-        if truth_map[payment_id] == detected_map[payment_id]
+        if truth_map[payment_id].issubset(detected_map[payment_id])
     }
 
     misclassified = {
         payment_id
         for payment_id in true_positives
-        if truth_map[payment_id] != detected_map[payment_id]
+        if not truth_map[payment_id].issubset(detected_map[payment_id])
     }
 
     detection_rate = (
@@ -66,15 +70,17 @@ def main():
     )
 
     print()
-    print("=" * 55)
+    print("=" * 60)
     print("RAZORPAY COPILOT - RECONCILIATION EVALUATION")
-    print("=" * 55)
+    print("=" * 60)
     print()
+
     print(f"Ground-truth incidents : {len(truth_ids)}")
-    print(f"Detected exceptions    : {len(detected_ids)}")
-    print(f"True positives         : {len(true_positives)}")
+    print(f"Detected exceptions    : {len(detected)}")
+    print(f"Detected payments      : {len(detected_ids)}")
+    print(f"True positive payments : {len(true_positives)}")
     print(f"Missed incidents       : {len(missed)}")
-    print(f"False positives        : {len(false_positives)}")
+    print(f"False positive payments: {len(false_positives)}")
     print(f"Detection rate         : {detection_rate:.2f}%")
     print(f"Classification rate    : {classification_rate:.2f}%")
     print()
@@ -84,8 +90,8 @@ def main():
         for payment_id in sorted(misclassified):
             print(
                 f"  - {payment_id}: "
-                f"expected={truth_map[payment_id]}, "
-                f"detected={detected_map[payment_id]}"
+                f"expected={sorted(truth_map[payment_id])}, "
+                f"detected={sorted(detected_map[payment_id])}"
             )
         print()
 
@@ -96,19 +102,26 @@ def main():
         print()
 
     if false_positives:
-        print("FALSE POSITIVES:")
+        print("FALSE POSITIVE PAYMENTS:")
         for payment_id in sorted(false_positives):
             print(f"  - {payment_id}")
         print()
 
     print("CLASSIFICATION BREAKDOWN")
-    print("-" * 55)
+    print("-" * 60)
 
-    expected_counts = Counter(truth_map.values())
-    detected_counts = Counter(
-        detected_map[payment_id]
-        for payment_id in true_positives
-    )
+    expected_counts = Counter()
+
+    for exception_types in truth_map.values():
+        for issue in exception_types:
+            expected_counts[issue] += 1
+
+    detected_counts = Counter()
+
+    for payment_id in true_positives:
+        for issue in detected_map[payment_id]:
+            if issue in truth_map[payment_id]:
+                detected_counts[issue] += 1
 
     for issue in sorted(expected_counts):
         print(
@@ -118,7 +131,7 @@ def main():
         )
 
     print()
-    print("=" * 55)
+    print("=" * 60)
 
 
 if __name__ == "__main__":
