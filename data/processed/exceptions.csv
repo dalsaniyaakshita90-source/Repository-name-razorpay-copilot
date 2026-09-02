@@ -1,0 +1,7 @@
+payment_id,exception_type,severity,reason,evidence
+PAY_0008,MISSING_BANK,HIGH,Successful ledger transaction has no matching bank record.,Ledger amount: Rs 2800.00
+PAY_0006,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 5000.00; Bank: Rs 4700.00; Difference: Rs 300.00
+PAY_0009,AMOUNT_MISMATCH,HIGH,Ledger amount does not match bank credit.,Ledger: Rs 3600.00; Bank: Rs 7200.00; Difference: Rs -3600.00
+PAY_0007,DATE_VARIANCE,MEDIUM,Settlement date differs significantly from transaction date.,Transaction date: 2026-08-07; Settlement date: 2026-08-11; Variance: 4 day(s)
+PAY_0009,DUPLICATE,HIGH,Multiple bank records exist for the same payment.,Bank records: 2; Combined credit: Rs 7200.00
+PAY_0010,REFUND_DIFFERENCE,MEDIUM,Refund adjustment requires reconciliation.,Refund amount: Rs 200.00
